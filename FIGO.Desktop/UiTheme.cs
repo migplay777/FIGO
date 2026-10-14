@@ -20,7 +20,7 @@ internal static class UiTheme
 
     public static Font Font(float size, FontStyle style = FontStyle.Regular) => new("Segoe UI", size, style);
 
-    public static Panel CardPanel(int padding = 14)
+    public static RoundedPanel CardPanel(int padding = 14)
     {
         return new RoundedPanel
         {
