@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FIGO.Desktop</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Referência direta ao projeto de backend: o Desktop enxerga
+         Viagem, Receita, Despesa, ViagemServices, ReceitaService,
+         DespesaService, ResumoService etc. sem precisar duplicar nada. -->
+    <ProjectReference Include="..\FIGO.backend\FIGO.backend.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\figo_logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
