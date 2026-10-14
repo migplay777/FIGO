@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../FIGO.Desktop/FIGO.Desktop.csproj" />
+  <Project Path="FIGO.backend.csproj" />
+</Solution>
