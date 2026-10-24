@@ -7,8 +7,10 @@ public class RelatoriosView : UserControl
     private readonly ResumoService service = new();
     private readonly DataGridView grid = new();
     private readonly Label aviso = ViewHelpers.EmptyOrError("");
-    public RelatoriosView()
+    private readonly int? viagemId;
+    public RelatoriosView(int? viagemId = null)
     {
+        this.viagemId = viagemId;
         BackColor = UiTheme.Background;
         var header = ViewHelpers.Header("Relatórios financeiros", "Consulte o saldo consolidado por viagem e exporte os resultados.");
         var card = new Panel { Dock = DockStyle.Fill, Padding = new Padding(16), BackColor = Color.White };
@@ -27,7 +29,7 @@ public class RelatoriosView : UserControl
     }
     private void Carregar()
     {
-        try { grid.DataSource = service.ListarResumos(); aviso.Text = ""; }
+        try { grid.DataSource = service.ListarResumos().Where(r => viagemId == null || r.ViagemId == viagemId).ToList(); aviso.Text = ""; }
         catch (Exception ex) { aviso.Text = "Não foi possível carregar o relatório: " + ex.Message; grid.DataSource = null; }
     }
     private void Exportar()

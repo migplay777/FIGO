@@ -1,0 +1,14 @@
+name: Compilar FIGO e validar senhas
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet build FIGO.Desktop/FIGO.Desktop.csproj --configuration Release
+      - run: dotnet run --project FIGO.Tests/FIGO.Tests.csproj --configuration Release

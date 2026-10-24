@@ -1,3 +1,5 @@
+using FIGO.backend;
+
 namespace FIGO.Desktop;
 
 public class FormPrincipal : Form
@@ -7,8 +9,11 @@ public class FormPrincipal : Form
     private readonly Dictionary<Button, Func<UserControl>> telas = new();
     private Button? botaoAtivo;
 
-    public FormPrincipal()
+    private readonly UsuarioAutenticado usuarioAtual;
+
+    public FormPrincipal(UsuarioAutenticado usuario)
     {
+        usuarioAtual = usuario;
         Text = "FIGO - Relatório Financeiro de Viagens Missionárias";
         MinimumSize = new Size(1180, 720);
         WindowState = FormWindowState.Maximized;
@@ -36,33 +41,11 @@ public class FormPrincipal : Form
     {
         var header = new Panel { Dock = DockStyle.Top, Height = 116, BackColor = UiTheme.Navy };
 
-        var logoPath = Path.Combine(AppContext.BaseDirectory, "Assets", "figo_logo.png");
-        if (File.Exists(logoPath))
-        {
-            var picture = new PictureBox
-            {
-                Left = 18,
-                Top = 12,
-                Width = 280,
-                Height = 92,
-                SizeMode = PictureBoxSizeMode.Zoom,
-                Image = Image.FromFile(logoPath),
-                BackColor = UiTheme.Navy
-            };
-            header.Controls.Add(picture);
-        }
-        else
-        {
-            header.Controls.Add(new Label
-            {
-                Text = "🫐  FIGO\n      Viagens Missionárias · Relatórios Financeiros",
-                ForeColor = Color.White,
-                Font = UiTheme.Font(19, FontStyle.Bold),
-                Left = 20,
-                Top = 28,
-                AutoSize = true
-            });
-        }
+        header.Controls.Add(new FigoLogo { Left = 20, Top = 10, Width = 80, Height = 96 });
+        header.Controls.Add(new Label { Text = "FIGO", Left = 110, Top = 22, AutoSize = true,
+            ForeColor = Color.White, Font = UiTheme.Font(26, FontStyle.Bold) });
+        header.Controls.Add(new Label { Text = "VIAGENS MISSIONÁRIAS\nGestão financeira", Left = 114, Top = 67,
+            AutoSize = true, ForeColor = Color.FromArgb(205, 216, 231), Font = UiTheme.Font(8) });
 
         var divisor = new Panel { Left = 315, Top = 16, Width = 1, Height = 82, BackColor = Color.FromArgb(70, 96, 125) };
         header.Controls.Add(divisor);
@@ -88,7 +71,7 @@ public class FormPrincipal : Form
 
         var usuario = new Label
         {
-            Text = "🔔      ●  Miguel   ⌄",
+            Text = "●  " + usuarioAtual.Nome,
             ForeColor = Color.White,
             Font = UiTheme.Font(10.5f),
             AutoSize = true,
@@ -111,7 +94,7 @@ public class FormPrincipal : Form
         menu.BackColor = UiTheme.Navy;
         lateral.Controls.Add(menu);
 
-        AdicionarItem("⌂   Dashboard", () => new DashboardView());
+        AdicionarItem("⌂   Dashboard", () => new DashboardView(usuarioAtual.Nome));
         AdicionarItem("✈   Viagens", () => new ViagensView());
         AdicionarItem("$   Receitas", () => new ReceitasView());
         AdicionarItem("▣   Despesas", () => new DespesasView());
@@ -169,7 +152,7 @@ public class FormPrincipal : Form
         botaoAtivo.Font = UiTheme.Font(10f, FontStyle.Bold);
 
         painelConteudo.SuspendLayout();
-        foreach (Control c in painelConteudo.Controls) c.Dispose();
+        foreach (var c in painelConteudo.Controls.Cast<Control>().ToArray()) c.Dispose();
         painelConteudo.Controls.Clear();
         var view = telas[botao]();
         view.Dock = DockStyle.Fill;

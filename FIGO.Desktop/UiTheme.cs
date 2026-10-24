@@ -53,7 +53,9 @@ internal static class UiTheme
 
 internal class RoundedPanel : Panel
 {
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
     public int Radius { get; set; } = 12;
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
     public Color BorderColor { get; set; } = Color.Transparent;
 
     public RoundedPanel()
@@ -100,6 +102,7 @@ internal class RoundedPanel : Panel
 
 internal sealed class RoundedButton : Button
 {
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
     public int Radius { get; set; } = 9;
     protected override void OnResize(EventArgs e)
     {
