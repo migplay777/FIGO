@@ -5,8 +5,8 @@ namespace FIGO.backend
     public static class Conexao
     {
         // TODO: ajuste Server, Uid e Pwd para o seu ambiente.
-        private const string ConnectionString =
-            Environment.GetEnvironmentVariable("FIGO_DB_CONNECTION") ?? throw new InvalidOperationException("Configure a variável de ambiente FIGO_DB_CONNECTION.");
+       private const string ConnectionString =
+    "Server = 'localhost'; Database= 'figo'; Uid='root'; Pwd='mi330guel';";
 
         public static MySqlConnection Abrir()
         {
