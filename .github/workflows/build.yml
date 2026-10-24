@@ -1,4 +1,4 @@
-name: Compilar FIGO e validar senhas
+name: Compilar e testar FIGO
 on:
   push:
   pull_request:
@@ -11,4 +11,34 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - run: dotnet build FIGO.Desktop/FIGO.Desktop.csproj --configuration Release
+      - run: dotnet run --project FIGO.Tests/FIGO.Tests.csproj --configuration Release
+      - run: dotnet run --project FIGO.Desktop.Tests/FIGO.Desktop.Tests.csproj --configuration Release
+  mysql:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: figo-ci-only
+          MYSQL_DATABASE: figo_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pfigo-ci-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      FIGO_DB_CONNECTION: Server=127.0.0.1;Port=3306;Database=figo_test;Uid=root;Pwd=figo-ci-only;UseAffectedRows=true;
+      FIGO_RUN_FINANCE_DB_TESTS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Preparar base legada e aplicar migração duas vezes
+        env:
+          MYSQL_CONTAINER: ${{ job.services.mysql.id }}
+        run: |
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/tests/base_legada.sql
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/002_cadastros_financeiros.sql
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/002_cadastros_financeiros.sql
       - run: dotnet run --project FIGO.Tests/FIGO.Tests.csproj --configuration Release

@@ -1,5 +1,4 @@
 using FIGO.backend;
-using System.Globalization;
 
 namespace FIGO.Desktop;
 
@@ -39,6 +38,9 @@ public class LancamentosView : UserControl
             tabela.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = titulo, DataPropertyName = campo });
         tabela.Columns[1].DefaultCellStyle.Format = "C2";
         tabela.Columns[2].DefaultCellStyle.Format = "dd/MM/yyyy";
+        if (receita)
+            foreach (var (titulo, campo) in new[] { ("Pagador", "PagadorNome"), ("Pagamento", "FormaPagamentoNome"), ("Conta de destino", "ContaDestino"), ("Referência", "ReferenciaPagamento") })
+                tabela.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = titulo, DataPropertyName = campo, MinimumWidth = campo == "ContaDestino" ? 210 : 115 });
         tabela.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         var footer = new Panel { Dock = DockStyle.Bottom, Height = 50 };
         total.Location = new Point(12, 15);
@@ -63,7 +65,7 @@ public class LancamentosView : UserControl
             aviso.Text = lista.Count == 0 ? "Cadastre uma viagem antes de registrar lançamentos." : "";
             CarregarLancamentos();
         }
-        catch (Exception ex) { aviso.Text = "Erro ao carregar viagens: " + ex.Message; }
+        catch (Exception ex) { aviso.Text = ErroFinanceiro.Mensagem(ex); }
     }
     private void CarregarLancamentos()
     {
@@ -84,7 +86,7 @@ public class LancamentosView : UserControl
             }
             aviso.Text = "";
         }
-        catch (Exception ex) { aviso.Text = "Erro ao consultar lançamentos: " + ex.Message; tabela.DataSource = null; }
+        catch (Exception ex) { aviso.Text = ErroFinanceiro.Mensagem(ex); tabela.DataSource = null; }
     }
     private void Novo() => AbrirFormulario(false);
     private void Editar() => AbrirFormulario(true);
@@ -102,58 +104,7 @@ public class LancamentosView : UserControl
         if (item == null) { MessageBox.Show("Selecione um lançamento."); return; }
         if (MessageBox.Show("Excluir este lançamento?", "FIGO", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
         try { if (receita) receitas.Excluir(((Receita)item).Id); else despesas.Excluir(((Despesa)item).Id); CarregarLancamentos(); }
-        catch (Exception ex) { MessageBox.Show(ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+        catch (Exception ex) { MessageBox.Show(ErroFinanceiro.Mensagem(ex), "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error); }
     }
     private record ViagemItem(int Id, string Nome) { public override string ToString() => Nome; }
-}
-
-internal sealed class FormLancamento : Form
-{
-    private readonly bool receita;
-    private readonly int viagemId;
-    private readonly object? original;
-    private readonly TextBox descricao = new();
-    private readonly NumericUpDown valor = new() { DecimalPlaces = 2, Maximum = 1000000000, ThousandsSeparator = true };
-    private readonly DateTimePicker data = new() { Format = DateTimePickerFormat.Short };
-    private readonly TextBox categoria = new();
-    public FormLancamento(bool isReceita, int id, object? item)
-    {
-        receita = isReceita; viagemId = id; original = item;
-        Text = (item == null ? "Novo lançamento — " : "Editar lançamento — ") + (receita ? "Receita" : "Despesa");
-        Size = new Size(490, 335); StartPosition = FormStartPosition.CenterParent;
-        FormBorderStyle = FormBorderStyle.FixedDialog; MaximizeBox = false;
-        BackColor = UiTheme.Background;
-        if (item is Receita r) { descricao.Text = r.Descricao; valor.Value = Math.Clamp(r.Valor, 0, valor.Maximum); data.Value = r.Data; categoria.Text = r.Origem; }
-        if (item is Despesa d) { descricao.Text = d.Descricao; valor.Value = Math.Clamp(d.Valor, 0, valor.Maximum); data.Value = d.Data; categoria.Text = d.Categoria; }
-        var campos = new (string, Control)[] { ("Descrição", descricao), ("Valor (R$)", valor), ("Data", data), (receita ? "Origem" : "Categoria", categoria) };
-        for (int i = 0; i < campos.Length; i++)
-        {
-            Controls.Add(new Label { Text = campos[i].Item1, Left = 24, Top = 30 + i * 48, Width = 120 });
-            var c = campos[i].Item2; c.Left = 150; c.Top = 25 + i * 48; c.Width = 290; Controls.Add(c);
-        }
-        var salvar = UiTheme.PrimaryButton("Salvar"); salvar.Left = 325; salvar.Top = 235; salvar.Width = 115;
-        salvar.Click += (_, _) => Salvar(); Controls.Add(salvar);
-    }
-    private void Salvar()
-    {
-        if (string.IsNullOrWhiteSpace(descricao.Text) || string.IsNullOrWhiteSpace(categoria.Text) || valor.Value <= 0)
-        { MessageBox.Show("Preencha descrição, valor positivo e origem/categoria."); return; }
-        try
-        {
-            if (receita)
-            {
-                var r = original as Receita ?? new Receita { ViagemId = viagemId };
-                r.Descricao = descricao.Text.Trim(); r.Valor = valor.Value; r.Data = data.Value.Date; r.Origem = categoria.Text.Trim();
-                if (original == null) new ReceitaService().Adicionar(r); else new ReceitaService().Editar(r);
-            }
-            else
-            {
-                var d = original as Despesa ?? new Despesa { ViagemId = viagemId };
-                d.Descricao = descricao.Text.Trim(); d.Valor = valor.Value; d.Data = data.Value.Date; d.Categoria = categoria.Text.Trim();
-                if (original == null) new DespesaService().Adicionar(d); else new DespesaService().Editar(d);
-            }
-            DialogResult = DialogResult.OK; Close();
-        }
-        catch (Exception ex) { MessageBox.Show("Erro ao salvar: " + ex.Message, "FIGO", MessageBoxButtons.OK, MessageBoxIcon.Error); }
-    }
 }
