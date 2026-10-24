@@ -556,7 +556,9 @@ internal sealed class DoughnutPanel : Panel
 
 internal sealed class BarsPanel : Panel
 {
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
     public decimal Receitas { get; set; }
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
     public decimal Despesas { get; set; }
     public BarsPanel() { DoubleBuffered = true; BackColor = Color.White; }
 
