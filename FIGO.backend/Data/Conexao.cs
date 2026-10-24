@@ -13,10 +13,6 @@ public static class Conexao
         try { conexao.Open(); return conexao; }
         catch { conexao.Dispose(); throw; }
     }
-        // TODO: ajuste Server, Uid e Pwd para o seu ambiente.
-       private const string ConnectionString =
-    "Server = 'localhost'; Database= 'figo'; Uid='root'; Pwd='mi330guel';";
-
     public static async Task<MySqlConnection> AbrirAsync()
     {
         var conexao = new MySqlConnection(ConnectionString);
