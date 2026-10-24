@@ -23,8 +23,11 @@ public class DashboardView : UserControl
     private readonly Dictionary<int, Viagem> viagensPorId = new();
     private bool carregando;
 
-    public DashboardView()
+    private readonly string nomeUsuario;
+
+    public DashboardView(string nomeUsuario)
     {
+        this.nomeUsuario = nomeUsuario;
         BackColor = UiTheme.Background;
         Dock = DockStyle.Fill;
         ConstruirTela();
@@ -61,7 +64,7 @@ public class DashboardView : UserControl
         var cabecalho = new Panel { Dock = DockStyle.Top, Height = 94, BackColor = UiTheme.Background };
         cabecalho.Controls.Add(new Label
         {
-            Text = "Bem-vindo, Miguel!",
+            Text = $"Bem-vindo, {nomeUsuario}!",
             Font = UiTheme.Font(18, FontStyle.Bold),
             ForeColor = UiTheme.Text,
             AutoSize = true,
@@ -367,7 +370,7 @@ public class DashboardView : UserControl
     private void MontarCards(ResumoViagem r)
     {
         cards.SuspendLayout();
-        foreach (Control c in cards.Controls) c.Dispose();
+        foreach (var c in cards.Controls.Cast<Control>().ToArray()) c.Dispose();
         cards.Controls.Clear();
         cards.Controls.Add(CriarCard("↓", "Receitas", Dinheiro(r.TotalReceitas), "Entradas registradas", UiTheme.Green));
         cards.Controls.Add(CriarCard("▣", "Despesas", Dinheiro(r.TotalDespesas), "Saídas registradas", UiTheme.Red));
@@ -448,7 +451,33 @@ public class DashboardView : UserControl
 
     private void AcaoRapida(string acao)
     {
-        MessageBox.Show($"Atalho '{acao.Replace("▣  ", "").Replace("▤  ", "").Replace("↓  ", "").Replace("$  ", "")}' disponível pelo menu lateral do FIGO.", "FIGO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        if (cmbViagem.SelectedItem is not Viagem viagem)
+        {
+            MessageBox.Show(this, "Selecione uma viagem cadastrada. Se necessário, cadastre uma nova viagem e verifique o MySQL.", "FIGO");
+            return;
+        }
+        if (acao.Contains("Lançar"))
+        {
+            using var form = new FormLancamento(acao.Contains("receita"), viagem.Id, null);
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                CarregarDados();
+                cmbViagem.SelectedValue = viagem.Id;
+            }
+            return;
+        }
+        using var consulta = new Form
+        {
+            Text = acao.Contains("Resumo") ? "Resumo da viagem" : "Lançamentos da viagem",
+            StartPosition = FormStartPosition.CenterParent,
+            Size = new Size(1000, 650), MinimumSize = new Size(850, 500)
+        };
+        UserControl view = acao.Contains("Resumo")
+            ? new RelatoriosView(viagem.Id)
+            : new LancamentosView(acao.Contains("receitas"), viagem.Id);
+        view.Dock = DockStyle.Fill;
+        consulta.Controls.Add(view);
+        consulta.ShowDialog(this);
     }
 
     private static LinhaViagem ParaLinha(ResumoViagem r, Viagem? v)

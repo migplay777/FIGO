@@ -6,7 +6,9 @@ namespace FIGO.Desktop
         static void Main()
         {
             ApplicationConfiguration.Initialize();
-            Application.Run(new FormPrincipal());
+            using var login = new FormLogin();
+            if (login.ShowDialog() == DialogResult.OK && login.Usuario is { } usuario)
+                Application.Run(new FormPrincipal(usuario));
         }
     }
 }

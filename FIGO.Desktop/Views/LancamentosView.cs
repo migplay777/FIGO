@@ -15,8 +15,11 @@ public class LancamentosView : UserControl
     private readonly Label total = new() { AutoSize = true, Font = UiTheme.Font(12, FontStyle.Bold), ForeColor = UiTheme.Text };
     private List<Viagem> lista = new();
 
-    public LancamentosView(bool isReceita)
+    private readonly int? viagemInicial;
+
+    public LancamentosView(bool isReceita, int? viagemId = null)
     {
+        viagemInicial = viagemId;
         receita = isReceita;
         BackColor = UiTheme.Background;
         var header = ViewHelpers.Header(receita ? "Receitas" : "Despesas", "Gerencie os lançamentos financeiros de cada viagem.");
@@ -55,6 +58,8 @@ public class LancamentosView : UserControl
         {
             lista = viagens.Listar();
             seletor.DataSource = lista.Select(v => new ViagemItem(v.Id, v.Nome + " — " + v.Destino)).ToList();
+            if (viagemInicial is int id)
+                seletor.SelectedItem = seletor.Items.Cast<ViagemItem>().FirstOrDefault(v => v.Id == id);
             aviso.Text = lista.Count == 0 ? "Cadastre uma viagem antes de registrar lançamentos." : "";
             CarregarLancamentos();
         }
