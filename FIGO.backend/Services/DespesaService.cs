@@ -5,27 +5,37 @@ namespace FIGO.backend
 {
     public class DespesaService
     {
-        public void Adicionar(Despesa despesa)
+        public void Adicionar(Despesa despesa) => Salvar(despesa, false);
+        public void Editar(Despesa despesa) => Salvar(despesa, true);
+
+        private static void Salvar(Despesa despesa, bool editar)
         {
+            ValidacaoFinanceira.Despesa(despesa);
             using var conexao = Conexao.Abrir();
-            const string sql = @"
-                INSERT INTO Despesa (ViagemId, Descricao, Valor, Data, Categoria)
-                VALUES (@ViagemId, @Descricao, @Valor, @Data, @Categoria);
-                SELECT LAST_INSERT_ID();";
-            using var comando = new MySqlCommand(sql, conexao);
-            comando.Parameters.AddWithValue("@ViagemId", despesa.ViagemId);
-            comando.Parameters.AddWithValue("@Descricao", despesa.Descricao);
-            comando.Parameters.AddWithValue("@Valor", despesa.Valor);
-            comando.Parameters.AddWithValue("@Data", despesa.Data);
-            comando.Parameters.AddWithValue("@Categoria", despesa.Categoria);
-            despesa.Id = System.Convert.ToInt32(comando.ExecuteScalar());
+            string sql = editar ? @"
+                UPDATE Despesa d JOIN CategoriaDespesa c ON c.Id = @categoria
+                SET d.Descricao = @descricao, d.Valor = @valor, d.Data = @data, d.Categoria = c.Nome, d.CategoriaId = c.Id
+                WHERE d.Id = @id AND d.ViagemId = @viagem;" : @"
+                INSERT INTO Despesa (ViagemId, Descricao, Valor, Data, Categoria, CategoriaId)
+                SELECT @viagem, @descricao, @valor, @data, c.Nome, c.Id FROM CategoriaDespesa c WHERE c.Id = @categoria;";
+            using var cmd = new MySqlCommand(sql, conexao);
+            cmd.Parameters.AddWithValue("@id", despesa.Id); cmd.Parameters.AddWithValue("@viagem", despesa.ViagemId);
+            cmd.Parameters.AddWithValue("@descricao", despesa.Descricao.Trim()); cmd.Parameters.AddWithValue("@valor", despesa.Valor);
+            cmd.Parameters.AddWithValue("@data", despesa.Data.Date); cmd.Parameters.AddWithValue("@categoria", despesa.CategoriaId);
+            if (cmd.ExecuteNonQuery() == 0)
+            {
+                if (!editar) throw new ArgumentException("Categoria não encontrada. Atualize a seleção.");
+                cmd.CommandText = "SELECT COUNT(*) FROM Despesa d JOIN CategoriaDespesa c ON c.Id = @categoria WHERE d.Id = @id AND d.ViagemId = @viagem";
+                if (Convert.ToInt32(cmd.ExecuteScalar()) == 0) throw new ArgumentException("Despesa ou categoria não encontrada. Atualize a listagem.");
+            }
+            if (!editar) despesa.Id = checked((int)cmd.LastInsertedId);
         }
 
         public List<Despesa> ListarPorViagem(int viagemId)
         {
             var despesas = new List<Despesa>();
             using var conexao = Conexao.Abrir();
-            const string sql = "SELECT Id, ViagemId, Descricao, Valor, Data, Categoria FROM Despesa WHERE ViagemId = @ViagemId ORDER BY Data;";
+            const string sql = "SELECT Id, ViagemId, Descricao, Valor, Data, Categoria, CategoriaId FROM Despesa WHERE ViagemId = @ViagemId ORDER BY Data;";
             using var comando = new MySqlCommand(sql, conexao);
             comando.Parameters.AddWithValue("@ViagemId", viagemId);
             using var leitor = comando.ExecuteReader();
@@ -38,29 +48,11 @@ namespace FIGO.backend
                     Descricao = leitor.GetString("Descricao"),
                     Valor = leitor.GetDecimal("Valor"),
                     Data = leitor.GetDateTime("Data"),
-                    Categoria = leitor.GetString("Categoria")
+                    Categoria = leitor.GetString("Categoria"),
+                    CategoriaId = leitor.IsDBNull(leitor.GetOrdinal("CategoriaId")) ? null : leitor.GetInt32("CategoriaId")
                 });
             }
             return despesas;
-        }
-
-        public void Editar(Despesa despesa)
-        {
-            using var conexao = Conexao.Abrir();
-            const string sql = @"
-                UPDATE Despesa
-                SET Descricao = @Descricao,
-                    Valor = @Valor,
-                    Data = @Data,
-                    Categoria = @Categoria
-                WHERE Id = @Id;";
-            using var comando = new MySqlCommand(sql, conexao);
-            comando.Parameters.AddWithValue("@Descricao", despesa.Descricao);
-            comando.Parameters.AddWithValue("@Valor", despesa.Valor);
-            comando.Parameters.AddWithValue("@Data", despesa.Data);
-            comando.Parameters.AddWithValue("@Categoria", despesa.Categoria);
-            comando.Parameters.AddWithValue("@Id", despesa.Id);
-            comando.ExecuteNonQuery();
         }
 
         public void Excluir(int id)

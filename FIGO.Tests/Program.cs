@@ -47,3 +47,6 @@ if (Environment.GetEnvironmentVariable("FIGO_RUN_DB_TESTS") == "1")
         cmd.ExecuteNonQuery();
     }
 }
+
+FinanceiroTests.Validacoes();
+if (Environment.GetEnvironmentVariable("FIGO_RUN_FINANCE_DB_TESTS") == "1") FinanceiroTests.Integracao();
