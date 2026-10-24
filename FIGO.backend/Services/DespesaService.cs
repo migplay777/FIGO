@@ -82,7 +82,6 @@ namespace FIGO.backend
                 resultado.Add(new DespesaCategoria
                 {
                     Categoria = leitor.GetString("Categoria"),
-                    CategoriaId = leitor.IsDBNull(leitor.GetOrdinal("CategoriaId")) ? null : leitor.GetInt32("CategoriaId"),
                     Total = leitor.GetDecimal("Total")
                 });
             }
