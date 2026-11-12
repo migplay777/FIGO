@@ -4,11 +4,11 @@ namespace FIGO.Desktop
 {
     public class FormNovaViagem : Form
     {
-        private readonly TextBox txtNome = new() { Left = 140, Top = 20, Width = 260 };
-        private readonly TextBox txtDestino = new() { Left = 140, Top = 55, Width = 260 };
+        private readonly TextBox txtNome = new() { Left = 140, Top = 20, Width = 260, MaxLength = 255 };
+        private readonly TextBox txtDestino = new() { Left = 140, Top = 55, Width = 260, MaxLength = 255 };
         private readonly DateTimePicker dtInicio = new() { Left = 140, Top = 90, Width = 260, Format = DateTimePickerFormat.Short };
         private readonly DateTimePicker dtFim = new() { Left = 140, Top = 125, Width = 260, Format = DateTimePickerFormat.Short };
-        private readonly NumericUpDown numParticipantes = new() { Left = 140, Top = 160, Width = 260, Minimum = 0, Maximum = 500 };
+        private readonly NumericUpDown numParticipantes = new() { Left = 140, Top = 160, Width = 260, Minimum = 0, Maximum = Viagem.MaximoParticipantes };
         private readonly Label lblErro = new() { Left = 20, Top = 195, Width = 380, ForeColor = Color.Red, AutoSize = false };
 
         private readonly ViagemServices viagemService = new();
@@ -74,18 +74,17 @@ namespace FIGO.Desktop
                 return;
             }
 
-            var viagem = new Viagem
-            {
-                Nome = txtNome.Text.Trim(),
-                Destino = txtDestino.Text.Trim(),
-                DataInicio = dtInicio.Value.Date,
-                DataFim = dtFim.Value.Date,
-                QuantidadeParticipantes = (int)numParticipantes.Value
-            };
-
+            Viagem viagem;
             try
             {
+                viagem = new Viagem(txtNome.Text, txtDestino.Text, dtInicio.Value,
+                    dtFim.Value, (int)numParticipantes.Value);
                 viagemService.Adicionar(viagem);
+            }
+            catch (ArgumentException ex)
+            {
+                lblErro.Text = ex.Message;
+                return;
             }
             catch (Exception ex)
             {

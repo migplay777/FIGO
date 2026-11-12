@@ -7,6 +7,8 @@ namespace FIGO.backend
     {
         public void Adicionar(Viagem viagem)
         {
+            ArgumentNullException.ThrowIfNull(viagem);
+            viagem.Validar();
             using var conexao = Conexao.Abrir();
             const string sql = @"
                 INSERT INTO Viagem (Nome, Destino, DataInicio, DataFim, QuantidadeParticipantes)
@@ -44,6 +46,9 @@ namespace FIGO.backend
 
         public void Editar(Viagem viagem)
         {
+            ArgumentNullException.ThrowIfNull(viagem);
+            viagem.Validar();
+            if (viagem.Id <= 0) throw new ArgumentException("Selecione uma viagem cadastrada para editar.");
             using var conexao = Conexao.Abrir();
             const string sql = @"
                 UPDATE Viagem

@@ -1,4 +1,5 @@
 using FIGO.Desktop;
+using FIGO.backend;
 using System.Reflection;
 
 namespace FIGO.Desktop.Tests;
@@ -28,6 +29,16 @@ internal static class Program
         seletor.Escolher(2);
         Confere(seletor.IdSelecionado == 2 && seletor.Items.Count == 3, "Recarregar a lista perdeu a seleção por ID.");
         Console.WriteLine("Seletores WinForms: busca, ID selecionado e prevenção de texto livre passaram.");
+        var viagem = new Viagem("Missão de teste", "Campinas", DateTime.Today, DateTime.Today.AddDays(1), 150);
+        using (var editor = new FormEditarViagem(viagem))
+        {
+            Confere(editor.Controls.OfType<NumericUpDown>().Single().Value == 150,
+                "A edição não abriu com mais de 100 participantes.");
+            editor.Controls.OfType<TextBox>().First().Text = "Alteração ainda não salva";
+        }
+        Confere(viagem.Nome == "Missão de teste" && viagem.QuantidadeParticipantes == 150,
+            "Cancelar a edição alterou a referência original da viagem.");
+        Console.WriteLine("Editor WinForms: 150 participantes e cancelamento sem alterar o objeto passaram.");
     }
     private static void Confere(bool condicao, string mensagem) { if (!condicao) throw new Exception(mensagem); }
 }
