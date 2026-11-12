@@ -12,7 +12,7 @@ Este documento explica como o FIGO utiliza os conceitos de LP2 para registrar e 
 
 ## 1 Conferência dos requisitos mínimos
 
-O PDF da disciplina estabelece cinco requisitos. A versão anterior já possuía as funcionalidades principais e conceitos distribuídos entre modelos, serviços, formulários e records. A atualização torna a orientação a objetos explícita na classe de domínio Viagem, reforça a validação antes da persistência e corrige problemas de edição. Não foi necessário trocar o provedor de banco nem recriar os módulos financeiros.
+O PDF da disciplina estabelece cinco requisitos. A versão anterior já possuía as funcionalidades principais e conceitos distribuídos entre modelos, serviços, formulários e records. A atualização torna a orientação a objetos explícita na classe de domínio Viagem, reforça a validação antes da persistência e corrige problemas de edição.
 
 | Requisito do PDF | Evidência na versão atualizada |
 | --- | --- |
@@ -109,7 +109,7 @@ int duracao = viagem.CalcularDuracaoEmDias(incluirUltimoDia: true);
 
 O painel apresenta a quantidade de participantes e a duração da viagem. O método integra uma funcionalidade real da interface, além de demonstrar passagem e retorno de valores.
 
-| Regra de Viagem.Validar | Motivo |
+| Regra da viagem | Motivo |
 | --- | --- |
 | Nome e destino entre 1 e 255 caracteres | Evita textos vazios e respeita os campos do banco. |
 | Datas preenchidas e compatíveis com o domínio DATE do MySQL | Impede que objetos sem datas válidas cheguem à gravação. |
@@ -194,7 +194,7 @@ catch (ArgumentException ex)
 }
 ```
 
-Um exemplo de exceção gerada pela biblioteca do .NET ocorre na gravação do arquivo CSV com File.WriteAllLines. O tratamento distingue falta de permissão e falha de entrada e saída. Não é necessário provocar um Parse artificial para atender ao requisito.
+Um exemplo de exceção gerada pela biblioteca do .NET ocorre na gravação do arquivo CSV com File.WriteAllLines. O tratamento distingue falta de permissão e falha de entrada e saída.
 
 ```csharp
 try
@@ -295,7 +295,7 @@ As regras financeiras permanecem concentradas em ValidacaoFinanceira e nos servi
 
 UsuarioService gera salt individual e hash com PBKDF2 SHA256. A autenticação lê os dados de verificação no MySQL e compara os hashes. A senha em texto puro não é armazenada na tabela Usuarios.
 
-O login identifica uma conta cadastrada. A aprovação administrativa de novos usuários e a autoria individual dos lançamentos ainda não estão implementadas. Esses pontos devem ser decididos com Samuel para a implantação na igreja; não são exigências adicionais inventadas para o mínimo de LP2.
+O login identifica uma conta cadastrada. A aprovação administrativa de novos usuários e a autoria individual dos lançamentos ainda não estão implementadas. Esses pontos devem ser decididos com Samuel para a implantação na igreja.
 
 As regras de 3FN e os materiais específicos de Banco de Dados são tratados na documentação do banco. O atendimento dos requisitos de LP2, isoladamente, não representa a conclusão de todas as entregas das disciplinas integradas.
 
