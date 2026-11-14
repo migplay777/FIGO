@@ -23,7 +23,7 @@ public class LancamentosView : UserControl
         BackColor = UiTheme.Background;
         var header = ViewHelpers.Header(receita ? "Receitas" : "Despesas", "Gerencie os lançamentos financeiros de cada viagem.");
         var card = new Panel { Dock = DockStyle.Fill, Padding = new Padding(16), BackColor = Color.White };
-        var toolbar = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 52, WrapContents = false };
+        var toolbar = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 96, AutoScroll = true };
         toolbar.Controls.Add(seletor);
         foreach (var (nome, acao) in new (string, Action)[] { ("Novo", Novo), ("Editar", Editar), ("Excluir", Excluir), ("Atualizar", CarregarLancamentos) })
         {
@@ -31,6 +31,15 @@ public class LancamentosView : UserControl
             botao.Click += (_, _) => acao();
             toolbar.Controls.Add(botao);
         }
+        var anexos = ViewHelpers.SecondaryButton("Comprovantes"); anexos.Width = 140;
+        anexos.Click += (_, _) =>
+        {
+            var item = tabela.CurrentRow?.DataBoundItem;
+            int id = item is Receita r ? r.Id : item is Despesa d ? d.Id : 0;
+            if (id == 0) { MessageBox.Show("Selecione um lançamento salvo."); return; }
+            using var f = new FormAnexos(receita, id); f.ShowDialog(this);
+        };
+        toolbar.Controls.Add(anexos);
         seletor.SelectedIndexChanged += (_, _) => CarregarLancamentos();
         ViewHelpers.EstilizarGrid(tabela);
         tabela.Dock = DockStyle.Fill;

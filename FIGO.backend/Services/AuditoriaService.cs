@@ -15,7 +15,8 @@ public sealed class AuditoriaService
 {
     public static IReadOnlyList<string> Entidades { get; } = Array.AsReadOnly(new[] {
         "Viagem", "Receita", "Despesa", "Usuarios", "Pagador", "OrigemReceita", "FormaPagamento",
-        "ContaFinanceira", "CategoriaDespesa", "Participante", "FuncaoParticipante", "ViagemParticipante" });
+        "ContaFinanceira", "CategoriaDespesa", "Participante", "FuncaoParticipante", "ViagemParticipante",
+        "AnexoLancamento", "OrcamentoViagem", "ItemOrcamento", "MetaArrecadacao", "ContaPagar", "PagamentoConta" });
 
     public PaginaAuditoria Listar(DateTime inicioUtc, DateTime fimUtc, string? entidade = null,
         int? tipo = null, string? autor = null, int pagina = 1, int tamanhoPagina = 50)

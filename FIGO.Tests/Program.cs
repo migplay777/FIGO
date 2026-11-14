@@ -50,6 +50,7 @@ if (Environment.GetEnvironmentVariable("FIGO_RUN_DB_TESTS") == "1")
 
 FinanceiroTests.Validacoes();
 ParticipantesAuditoriaTests.Validacoes();
+PlanejamentoTests.Validacoes();
 ViagemTests.Validacoes();
 if (Environment.GetEnvironmentVariable("FIGO_RUN_FINANCE_DB_TESTS") == "1")
 {
@@ -60,3 +61,5 @@ if (Environment.GetEnvironmentVariable("FIGO_RUN_PARTICIPANTES_DB_TESTS") == "1"
     await ParticipantesAuditoriaTests.IntegracaoAsync();
 if (Environment.GetEnvironmentVariable("FIGO_RUN_INSTALL_TESTS") == "1")
     ParticipantesAuditoriaTests.InstalacaoVazia();
+if (Environment.GetEnvironmentVariable("FIGO_RUN_PLANEJAMENTO_DB_TESTS") == "1")
+    await PlanejamentoTests.IntegracaoAsync();

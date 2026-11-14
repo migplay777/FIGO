@@ -86,10 +86,10 @@ public class FormPrincipal : Form
     private Control CriarMenuLateral()
     {
         var lateral = new Panel { Dock = DockStyle.Left, Width = 230, BackColor = UiTheme.Navy };
-        menu.Dock = DockStyle.Top;
+        menu.Dock = DockStyle.Fill;
+        menu.AutoScroll = true;
         menu.FlowDirection = FlowDirection.TopDown;
         menu.WrapContents = false;
-        menu.Height = 435;
         menu.Padding = new Padding(8, 8, 8, 0);
         menu.BackColor = UiTheme.Navy;
         lateral.Controls.Add(menu);
@@ -99,21 +99,23 @@ public class FormPrincipal : Form
         AdicionarItem("♟   Participantes", () => new ParticipantesView());
         AdicionarItem("$   Receitas", () => new ReceitasView());
         AdicionarItem("▣   Despesas", () => new DespesasView());
+        AdicionarItem("▤   Planejamento", () => new PlanejamentoView());
+        AdicionarItem("◷   Contas a pagar", () => new ContasPagarView());
         AdicionarItem("▥   Relatórios", () => new RelatoriosView());
         AdicionarItem("≡   Histórico", () => new AuditoriaView());
         AdicionarItem("⚙   Configurações", () => new ConfiguracoesView());
 
         var rodape = new Label
         {
-            Text = "♜   Igreja Família da Fé\n\nv1.2.0",
+            Text = "♜   Igreja Família da Fé\n\nv1.3.0",
             ForeColor = Color.FromArgb(220, 231, 244),
             Font = UiTheme.Font(9f),
-            AutoSize = true,
-            Left = 26,
-            Anchor = AnchorStyles.Left | AnchorStyles.Bottom
+            AutoSize = false,
+            Dock = DockStyle.Bottom,
+            Height = 82,
+            Padding = new Padding(26, 8, 0, 0)
         };
         lateral.Controls.Add(rodape);
-        lateral.Resize += (_, _) => rodape.Top = lateral.ClientSize.Height - 82;
         return lateral;
     }
 

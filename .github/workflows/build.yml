@@ -31,6 +31,7 @@ jobs:
       FIGO_RUN_DB_TESTS: '1'
       FIGO_RUN_FINANCE_DB_TESTS: '1'
       FIGO_RUN_PARTICIPANTES_DB_TESTS: '1'
+      FIGO_RUN_PLANEJAMENTO_DB_TESTS: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -46,11 +47,15 @@ jobs:
           docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/002_cadastros_financeiros.sql
           docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/003_participantes_auditoria.sql
           docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/003_participantes_auditoria.sql
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/004_planejamento_anexos_contas.sql
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/004_planejamento_anexos_contas.sql
       - run: dotnet run --project FIGO.Tests/FIGO.Tests.csproj --configuration Release
       - name: Reaplicar migração após dados e logs reais dos testes
         env:
           MYSQL_CONTAINER: ${{ job.services.mysql.id }}
-        run: docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/003_participantes_auditoria.sql
+        run: |
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/003_participantes_auditoria.sql
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/004_planejamento_anexos_contas.sql
       - name: Verificar reexecução sem apagar pessoas ou histórico
         env:
           FIGO_RUN_DB_TESTS: '0'
@@ -68,5 +73,6 @@ jobs:
           FIGO_RUN_DB_TESTS: '0'
           FIGO_RUN_FINANCE_DB_TESTS: '0'
           FIGO_RUN_PARTICIPANTES_DB_TESTS: '0'
+          FIGO_RUN_PLANEJAMENTO_DB_TESTS: '0'
           FIGO_RUN_INSTALL_TESTS: '1'
         run: dotnet run --project FIGO.Tests/FIGO.Tests.csproj --configuration Release

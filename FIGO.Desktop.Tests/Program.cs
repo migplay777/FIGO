@@ -56,6 +56,22 @@ internal static class Program
                 "Reutilizar pessoa permite sobrescrever identidade sem edição explícita.");
         }
         Console.WriteLine("Participantes WinForms: opcionais vazios, reutilização e cancelamento passaram.");
+        var conta = new ContaPagar { Id=1,ViagemId=1,Descricao="Hotel",Credor="Hotel de teste",CategoriaId=1,ValorTotal=100,Pago=30,Vencimento=DateTime.Today };
+        using(var form=new FormPagamentoConta(conta))
+        {
+            var dinheiro=form.Controls.OfType<TableLayoutPanel>().Single().Controls.OfType<NumericUpDown>().Single();
+            Confere(dinheiro.Maximum==70 && dinheiro.Value==70,"Pagamento não respeitou o saldo restante.");
+        }
+        using(var form=new FormContaPagar(1,[new(1,"Hospedagem")],conta))
+        {
+            var campos=form.Controls.OfType<TableLayoutPanel>().Single();
+            Confere(!campos.Controls.OfType<ComboBox>().Single().Enabled,"Categoria de conta com pagamentos não foi protegida.");
+            campos.Controls.OfType<TextBox>().First().Text="Edição cancelada";
+        }
+        Confere(conta.Descricao=="Hotel" && conta.ValorTotal==100,"Cancelar edição alterou a conta original.");
+        using(var form=new FormMetaArrecadacao(1))
+            Confere(!form.Controls.OfType<TableLayoutPanel>().Single().Controls.OfType<DateTimePicker>().Single().Checked,"Prazo opcional da meta foi preenchido automaticamente.");
+        Console.WriteLine("Planejamento WinForms: saldo para pagamento, categoria protegida, cancelamento e prazo opcional passaram.");
     }
     private static void Confere(bool condicao, string mensagem) { if (!condicao) throw new Exception(mensagem); }
 }

@@ -1,5 +1,7 @@
 # FIGO — Participantes opcionais e histórico de alterações
 
+> Este documento descreve a entrega 1.2 com 15 tabelas. A versão 1.3 implementa as opções 1, 2, 3 e 7 abaixo, chegando a **21 tabelas**. Consulte [a documentação atual das novas funções](PLANEJAMENTO_ANEXOS_CONTAS.md). A migração 004 deve ser aplicada depois da 003.
+
 Versão 1.2.0 · 14/11/2026 · C# / .NET 10 / Windows Forms / MySQL 8.0.16+ (CI: MySQL 8.4).
 
 Conector MySQL atualizado para **MySqlConnector 2.6.1**, versão corrigida para o aviso GHSA-473q-m89c-ghf8 identificado pelo NuGet durante a compilação. Referência do mantenedor: https://github.com/mysql-net/MySqlConnector/security/advisories/GHSA-473q-m89c-ghf8.
