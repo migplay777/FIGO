@@ -351,7 +351,8 @@ public class DashboardView : UserControl
             MontarCards(resumo);
             lblTripTitulo.Text = "✈  " + viagem.Destino;
             lblTripPeriodo.Text = $"{viagem.DataInicio:dd/MM/yyyy}   →   {viagem.DataFim:dd/MM/yyyy}";
-            lblTripParticipantes.Text = $"♟  {viagem.QuantidadeParticipantes} participantes";
+            int duracao = viagem.CalcularDuracaoEmDias(incluirUltimoDia: true);
+            lblTripParticipantes.Text = $"♟  {viagem.QuantidadeParticipantes} participantes • {duracao} dia(s)";
 
             graficoComparativo.Receitas = resumo.TotalReceitas;
             graficoComparativo.Despesas = resumo.TotalDespesas;

@@ -89,21 +89,23 @@ public class FormPrincipal : Form
         menu.Dock = DockStyle.Top;
         menu.FlowDirection = FlowDirection.TopDown;
         menu.WrapContents = false;
-        menu.Height = 370;
+        menu.Height = 435;
         menu.Padding = new Padding(8, 8, 8, 0);
         menu.BackColor = UiTheme.Navy;
         lateral.Controls.Add(menu);
 
         AdicionarItem("⌂   Dashboard", () => new DashboardView(usuarioAtual.Nome));
         AdicionarItem("✈   Viagens", () => new ViagensView());
+        AdicionarItem("♟   Participantes", () => new ParticipantesView());
         AdicionarItem("$   Receitas", () => new ReceitasView());
         AdicionarItem("▣   Despesas", () => new DespesasView());
         AdicionarItem("▥   Relatórios", () => new RelatoriosView());
+        AdicionarItem("≡   Histórico", () => new AuditoriaView());
         AdicionarItem("⚙   Configurações", () => new ConfiguracoesView());
 
         var rodape = new Label
         {
-            Text = "♜   Igreja Família da Fé\n\nv1.1.0",
+            Text = "♜   Igreja Família da Fé\n\nv1.2.0",
             ForeColor = Color.FromArgb(220, 231, 244),
             Font = UiTheme.Font(9f),
             AutoSize = true,

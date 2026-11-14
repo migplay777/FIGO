@@ -28,7 +28,9 @@ jobs:
           --health-interval=10s --health-timeout=5s --health-retries=10
     env:
       FIGO_DB_CONNECTION: Server=127.0.0.1;Port=3306;Database=figo_test;Uid=root;Pwd=figo-ci-only;UseAffectedRows=true;
+      FIGO_RUN_DB_TESTS: '1'
       FIGO_RUN_FINANCE_DB_TESTS: '1'
+      FIGO_RUN_PARTICIPANTES_DB_TESTS: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -39,6 +41,32 @@ jobs:
           MYSQL_CONTAINER: ${{ job.services.mysql.id }}
         run: |
           docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/tests/base_legada.sql
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/001_usuarios.sql
           docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/002_cadastros_financeiros.sql
           docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/002_cadastros_financeiros.sql
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/003_participantes_auditoria.sql
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/003_participantes_auditoria.sql
       - run: dotnet run --project FIGO.Tests/FIGO.Tests.csproj --configuration Release
+      - name: Reaplicar migração após dados e logs reais dos testes
+        env:
+          MYSQL_CONTAINER: ${{ job.services.mysql.id }}
+        run: docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only figo_test < database/003_participantes_auditoria.sql
+      - name: Verificar reexecução sem apagar pessoas ou histórico
+        env:
+          FIGO_RUN_DB_TESTS: '0'
+          FIGO_RUN_FINANCE_DB_TESTS: '0'
+        run: dotnet run --project FIGO.Tests/FIGO.Tests.csproj --configuration Release
+      - name: Instalação completa em banco vazio e reexecução
+        env:
+          MYSQL_CONTAINER: ${{ job.services.mysql.id }}
+        run: |
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only < database/000_instalacao_completa.sql
+          docker exec -i "$MYSQL_CONTAINER" mysql --default-character-set=utf8mb4 -uroot -pfigo-ci-only < database/000_instalacao_completa.sql
+      - name: Verificar banco novo sem dados fictícios
+        env:
+          FIGO_DB_CONNECTION: Server=127.0.0.1;Port=3306;Database=figo;Uid=root;Pwd=figo-ci-only;UseAffectedRows=true;
+          FIGO_RUN_DB_TESTS: '0'
+          FIGO_RUN_FINANCE_DB_TESTS: '0'
+          FIGO_RUN_PARTICIPANTES_DB_TESTS: '0'
+          FIGO_RUN_INSTALL_TESTS: '1'
+        run: dotnet run --project FIGO.Tests/FIGO.Tests.csproj --configuration Release

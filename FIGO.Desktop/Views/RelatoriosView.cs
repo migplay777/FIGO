@@ -41,6 +41,8 @@ public class RelatoriosView : UserControl
         var linhas = new List<string> { "Viagem;Destino;Participantes;Receitas;Despesas;Saldo" };
         foreach (var v in itens) linhas.Add(string.Join(";", Csv(v.Nome), Csv(v.Destino), v.QuantidadeParticipantes, v.TotalReceitas.ToString(System.Globalization.CultureInfo.InvariantCulture), v.TotalDespesas.ToString(System.Globalization.CultureInfo.InvariantCulture), v.Saldo.ToString(System.Globalization.CultureInfo.InvariantCulture)));
         try { File.WriteAllLines(dialogo.FileName, linhas, new UTF8Encoding(true)); MessageBox.Show("Relatório exportado com sucesso."); }
+        catch (UnauthorizedAccessException) { MessageBox.Show("Sem permissão para salvar nesta pasta. Escolha outro local para o CSV.", "FIGO", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+        catch (IOException) { MessageBox.Show("Não foi possível gravar o CSV. Feche o arquivo se estiver aberto e verifique o local escolhido.", "FIGO", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
         catch (Exception ex) { MessageBox.Show("Erro ao exportar: " + ex.Message); }
     }
 }
