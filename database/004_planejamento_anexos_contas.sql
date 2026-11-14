@@ -249,7 +249,8 @@ FOR EACH ROW BEGIN
  DECLARE v_dviagem INT; DECLARE v_dcategoria INT; DECLARE v_valor DECIMAL(12,2); DECLARE v_pago DECIMAL(14,2);
  SELECT ViagemId,CategoriaDespesaId,ValorTotal INTO v_viagem,v_categoria,v_total FROM ContaPagar WHERE Id=NEW.ContaPagarId FOR UPDATE;
  SELECT ViagemId,CategoriaId,Valor INTO v_dviagem,v_dcategoria,v_valor FROM Despesa WHERE Id=NEW.DespesaId FOR UPDATE;
- SELECT COALESCE(SUM(d.Valor),0) INTO v_pago FROM PagamentoConta p JOIN Despesa d ON d.Id=p.DespesaId WHERE p.ContaPagarId=NEW.ContaPagarId FOR UPDATE;
+ -- Leitura atual, bloqueando apenas Despesa: PagamentoConta já é alvo do INSERT.
+ SELECT COALESCE(SUM(d.Valor),0) INTO v_pago FROM PagamentoConta p JOIN Despesa d ON d.Id=p.DespesaId WHERE p.ContaPagarId=NEW.ContaPagarId FOR UPDATE OF d;
  IF v_viagem IS NULL OR v_dviagem IS NULL OR NOT(v_viagem<=>v_dviagem) OR NOT(v_categoria<=>v_dcategoria) OR v_valor<=0 OR v_pago+v_valor>v_total THEN
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Pagamento invalido: confira viagem, categoria e saldo da conta.';
  END IF;

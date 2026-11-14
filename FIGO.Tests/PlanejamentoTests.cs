@@ -47,7 +47,9 @@ internal static class PlanejamentoTests
         conta.CategoriaId=segundaCategoria;Rejeita(()=>cp.Salvar(conta));conta.CategoriaId=categoria;
         int anexo=anexos.Adicionar(false,d.Id,"comprovante.pdf",pdf);
         Confere(anexos.Baixar(anexo).Conteudo.SequenceEqual(pdf),"Comprovante não preservou bytes/integridade.");
-        Rejeita(()=>anexos.Adicionar(false,d.Id,"copia.pdf",pdf));Rejeita(()=>cp.Estornar(conta.Id,pago));
+        Rejeita(()=>anexos.Adicionar(false,d.Id,"copia.pdf",pdf));
+        long logsAntesEstorno=Numero("SELECT COUNT(*) FROM LogAuditoria");Rejeita(()=>cp.Estornar(conta.Id,pago));
+        Confere(Numero("SELECT COUNT(*) FROM LogAuditoria")==logsAntesEstorno,"Estorno recusado deixou log parcial.");
         Confere(cp.Pagamentos(conta.Id).Count==1&&ds.ListarPorViagem(v.Id).Count==1,"Estorno bloqueado por anexo apagou parcialmente os dados.");
         Confere(Numero("SELECT COUNT(*) FROM DetalheLogAuditoria WHERE Campo='Conteudo' OR ValorNovo LIKE '%CONTEUDO_SENTINELA_PRIVADO%'")==0,"Auditoria copiou conteúdo de documento.");
         anexos.Excluir(anexo,false,d.Id);cp.Estornar(conta.Id,pago);
