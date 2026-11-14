@@ -2,6 +2,8 @@
 
 Versão 1.2.0 · 14/11/2026 · C# / .NET 10 / Windows Forms / MySQL 8.0.16+ (CI: MySQL 8.4).
 
+Conector MySQL atualizado para **MySqlConnector 2.6.1**, versão corrigida para o aviso GHSA-473q-m89c-ghf8 identificado pelo NuGet durante a compilação. Referência do mantenedor: https://github.com/mysql-net/MySqlConnector/security/advisories/GHSA-473q-m89c-ghf8.
+
 ## Entrega e contagem do banco
 
 A base anterior tem **9 tabelas**. Esta entrega acrescenta **6 tabelas**, totalizando **15 tabelas físicas**. A view `vw_ResumoViagem`, triggers, índices e procedimentos não contam como tabelas. As dez funções ao final são propostas futuras, ainda não implementadas.

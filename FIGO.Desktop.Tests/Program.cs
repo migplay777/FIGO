@@ -18,7 +18,7 @@ internal static class Program
         seletor.Pesquisar("menta");
         Confere(seletor.Items.Count == 1 && seletor.IdSelecionado == null, "A busca não filtrou por trecho ou reteve uma seleção antiga.");
         seletor.Pesquisar("12abc");
-        Confere(seletor.Items.Count == 1 && ((ItemSelecao)seletor.Items[0]).Id == 3, "Busca pelo CNPJ falhou.");
+        Confere(seletor.Items.Count == 1 && seletor.Items[0] is ItemSelecao { Id: 3 }, "Busca pelo CNPJ falhou.");
         seletor.SelectedIndex = 0;
         typeof(PesquisaComboBox).GetMethod("OnSelectionChangeCommitted", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(seletor, [EventArgs.Empty]);
         Confere(seletor.IdSelecionado == 3, "A seleção do resultado filtrado falhou.");
