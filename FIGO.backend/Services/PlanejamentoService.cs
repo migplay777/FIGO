@@ -29,11 +29,16 @@ public sealed class PlanejamentoService
     {
         ValidacaoPlanejamento.Id(viagemId, "uma viagem"); ValidacaoPlanejamento.Id(categoriaId, "uma categoria"); ValidacaoPlanejamento.Valor(previsto);
         using var c = Conexao.Abrir(); using var tx = c.BeginTransaction();
-        using var cmd = new MySqlCommand("INSERT INTO OrcamentoViagem (ViagemId) VALUES (@viagem) ON DUPLICATE KEY UPDATE Id=LAST_INSERT_ID(Id)", c, tx);
-        cmd.Parameters.AddWithValue("@viagem", viagemId); cmd.ExecuteNonQuery(); long orcamento = cmd.LastInsertedId;
-        cmd.CommandText = "INSERT INTO ItemOrcamento (OrcamentoViagemId,CategoriaDespesaId,ValorPrevisto) VALUES (@orcamento,@categoria,@valor) ON DUPLICATE KEY UPDATE ValorPrevisto=@valor, Id=LAST_INSERT_ID(Id)";
+        using var cmd = new MySqlCommand("INSERT INTO OrcamentoViagem (ViagemId) VALUES (@viagem) ON DUPLICATE KEY UPDATE ViagemId=@viagem", c, tx);
+        cmd.Parameters.AddWithValue("@viagem", viagemId); cmd.ExecuteNonQuery();
+        // No-op upserts com UseAffectedRows não fornecem necessariamente LastInsertedId.
+        cmd.CommandText = "SELECT Id FROM OrcamentoViagem WHERE ViagemId=@viagem FOR UPDATE";
+        long orcamento = Convert.ToInt64(cmd.ExecuteScalar());
+        cmd.CommandText = "INSERT INTO ItemOrcamento (OrcamentoViagemId,CategoriaDespesaId,ValorPrevisto) VALUES (@orcamento,@categoria,@valor) ON DUPLICATE KEY UPDATE ValorPrevisto=@valor";
         cmd.Parameters.AddWithValue("@orcamento", orcamento); cmd.Parameters.AddWithValue("@categoria", categoriaId); cmd.Parameters.AddWithValue("@valor", previsto);
-        cmd.ExecuteNonQuery(); int id = checked((int)cmd.LastInsertedId); tx.Commit(); return id;
+        cmd.ExecuteNonQuery();
+        cmd.CommandText = "SELECT Id FROM ItemOrcamento WHERE OrcamentoViagemId=@orcamento AND CategoriaDespesaId=@categoria";
+        int id = Convert.ToInt32(cmd.ExecuteScalar()); tx.Commit(); return id;
     }
     public void ExcluirItem(int viagemId, int itemId)
     {
@@ -52,9 +57,11 @@ public sealed class PlanejamentoService
     {
         ValidacaoPlanejamento.Id(viagemId, "uma viagem"); ValidacaoPlanejamento.Valor(valor);
         descricao = ValidacaoFinanceira.Nome(descricao, "Descrição da meta", 150); if (prazo != null) ValidacaoPlanejamento.Data(prazo.Value);
-        using var c = Conexao.Abrir(); using var cmd = new MySqlCommand("INSERT INTO MetaArrecadacao (ViagemId,Descricao,ValorMeta,DataLimite) VALUES (@viagem,@nome,@valor,@prazo) ON DUPLICATE KEY UPDATE Descricao=@nome,ValorMeta=@valor,DataLimite=@prazo,Id=LAST_INSERT_ID(Id)", c);
+        using var c = Conexao.Abrir(); using var tx = c.BeginTransaction();
+        using var cmd = new MySqlCommand("INSERT INTO MetaArrecadacao (ViagemId,Descricao,ValorMeta,DataLimite) VALUES (@viagem,@nome,@valor,@prazo) ON DUPLICATE KEY UPDATE Descricao=@nome,ValorMeta=@valor,DataLimite=@prazo", c, tx);
         cmd.Parameters.AddWithValue("@viagem", viagemId); cmd.Parameters.AddWithValue("@nome", descricao); cmd.Parameters.AddWithValue("@valor", valor); cmd.Parameters.AddWithValue("@prazo", prazo?.Date);
-        cmd.ExecuteNonQuery(); return checked((int)cmd.LastInsertedId);
+        cmd.ExecuteNonQuery(); cmd.CommandText = "SELECT Id FROM MetaArrecadacao WHERE ViagemId=@viagem";
+        int id = Convert.ToInt32(cmd.ExecuteScalar()); tx.Commit(); return id;
     }
     public void ExcluirMeta(int viagemId)
     {
