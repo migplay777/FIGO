@@ -35,8 +35,8 @@ internal static class ParticipantesAuditoriaTests
     {
         var builder = new MySqlConnectionStringBuilder(Environment.GetEnvironmentVariable("FIGO_DB_CONNECTION"));
         if (builder.Database != "figo_test") throw new Exception("Execute estes testes somente em figo_test.");
-        Confere(Numero("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE'") == 15, "O banco deve conter exatamente 15 tabelas.");
-        Confere(Numero("SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = DATABASE() AND TRIGGER_NAME LIKE 'Figo_Audit_%'") == 36, "Cobertura de triggers incompleta.");
+        Confere(Numero("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE'") == 21, "O banco deve conter exatamente 21 tabelas.");
+        Confere(Numero("SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = DATABASE() AND TRIGGER_NAME LIKE 'Figo_Audit_%'") == 54, "Cobertura de triggers incompleta.");
         var s = new ParticipantesService(); var v = new ViagemServices(); var audit = new AuditoriaService();
         string tag = Guid.NewGuid().ToString("N")[..10];
         await new UsuarioService().CadastrarAsync("audit_" + tag, "Teste123!");
@@ -110,14 +110,14 @@ internal static class ParticipantesAuditoriaTests
         }
         Executar($"DELETE FROM Usuarios WHERE Id={usuario.Id}");
         Confere(Numero($"SELECT COUNT(*) FROM LogAuditoria WHERE NomeUsuario='audit_{tag}' AND UsuarioId IS NULL") > 0, "Exclusão de usuário apagou identificação histórica.");
-        Console.WriteLine("MySQL: 15 tabelas, 36 triggers, participantes opcionais, reutilização, CPF, transações, auditoria financeira, privacidade, pool e paginação passaram.");
+        Console.WriteLine("MySQL: 21 tabelas, 54 triggers, participantes opcionais, reutilização, CPF, transações, auditoria financeira, privacidade, pool e paginação passaram.");
     }
 
     public static void InstalacaoVazia()
     {
         var b = new MySqlConnectionStringBuilder(Environment.GetEnvironmentVariable("FIGO_DB_CONNECTION"));
         if (b.Database != "figo") throw new Exception("Smoke test de instalação exige banco figo isolado do CI.");
-        Confere(Numero("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE'") == 15, "Instalador não criou as 15 tabelas.");
+        Confere(Numero("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE'") == 21, "Instalador não criou as 21 tabelas.");
         Confere(Numero("SELECT (SELECT COUNT(*) FROM Viagem)+(SELECT COUNT(*) FROM Receita)+(SELECT COUNT(*) FROM Despesa)+(SELECT COUNT(*) FROM Participante)") == 0, "Instalador inseriu dados fictícios.");
         var v = new Viagem("Instalação teste", "Campinas", DateTime.Today, DateTime.Today, 0); var vs = new ViagemServices(); vs.Adicionar(v);
         Confere(Numero($"SELECT COUNT(*) FROM LogAuditoria WHERE Entidade='Viagem' AND RegistroId={v.Id}") == 1, "Instalação não habilitou auditoria.");

@@ -160,7 +160,10 @@ for table in fields:
 base = (root / 'database/tests/base_legada.sql').read_text(encoding='utf-8').split('INSERT INTO Viagem')[0]
 base = '\n'.join(base.splitlines()[1:]).replace('CREATE TABLE ', 'CREATE TABLE IF NOT EXISTS ').replace('CREATE VIEW ', 'CREATE OR REPLACE VIEW ')
 full = "-- FIGO | Instalação completa vazia | MySQL 8.0.16+ / 8.4\n-- Para banco existente, prefira as migrações individuais; consulte docs/PARTICIPANTES_AUDITORIA.md.\nCREATE DATABASE IF NOT EXISTS figo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\nUSE figo;\n" + base
-for migration in ['001_usuarios.sql', '002_cadastros_financeiros.sql', '003_participantes_auditoria.sql']:
+migrations = ['001_usuarios.sql', '002_cadastros_financeiros.sql', '003_participantes_auditoria.sql']
+if (root / 'database/004_planejamento_anexos_contas.sql').exists():
+    migrations.append('004_planejamento_anexos_contas.sql')
+for migration in migrations:
     full += '\n' + (root / 'database' / migration).read_text(encoding='utf-8')
 (root / 'database/000_instalacao_completa.sql').write_text(full, encoding='utf-8')
-print('Gerados SQL 003 e 000: 6 novas tabelas, 36 triggers, total de 15 tabelas.')
+print('Gerados SQL 003 e 000. Migrações incluídas no instalador: ' + ', '.join(migrations))
