@@ -39,6 +39,23 @@ internal static class Program
         Confere(viagem.Nome == "Missão de teste" && viagem.QuantidadeParticipantes == 150,
             "Cancelar a edição alterou a referência original da viagem.");
         Console.WriteLine("Editor WinForms: 150 participantes e cancelamento sem alterar o objeto passaram.");
+        var participacao = new ParticipacaoViagem { Id = 1, ViagemId = 1, ParticipanteId = 1, NomeCompleto = "Maria de Teste", Idade = null, Cpf = null };
+        using (var editor = new FormParticipante(1, [], [], participacao))
+        {
+            var campos = editor.Controls.OfType<TableLayoutPanel>().Single().Controls.OfType<TextBox>().ToList();
+            Confere(campos.Single(x => x.AccessibleName == "Idade na viagem").Text == "", "Idade opcional virou zero.");
+            Confere(campos.Single(x => x.AccessibleName == "CPF (opcional)").Text == "", "CPF opcional não ficou vazio.");
+            campos.Single(x => x.AccessibleName == "Nome completo *").Text = "Edição cancelada";
+        }
+        Confere(participacao.NomeCompleto == "Maria de Teste" && participacao.Idade == null, "Cancelar participante alterou objeto original.");
+        using (var novo = new FormParticipante(1, [], []))
+        {
+            var controles = novo.Controls.OfType<TableLayoutPanel>().Single();
+            var opcao = controles.Controls.OfType<CheckBox>().Single(); opcao.Checked = true;
+            Confere(!controles.Controls.OfType<TextBox>().Single(x => x.AccessibleName == "Nome completo *").Enabled,
+                "Reutilizar pessoa permite sobrescrever identidade sem edição explícita.");
+        }
+        Console.WriteLine("Participantes WinForms: opcionais vazios, reutilização e cancelamento passaram.");
     }
     private static void Confere(bool condicao, string mensagem) { if (!condicao) throw new Exception(mensagem); }
 }

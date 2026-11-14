@@ -4,9 +4,11 @@ Sistema financeiro de viagens missionárias da Igreja Família da Fé, desenvolv
 
 ## Estrutura
 - `FIGO.backend/` — modelos, serviços e acesso ao MySQL.
-- `FIGO.Desktop/` — interface Windows Forms com Dashboard, Viagens, Receitas, Despesas, Relatórios e Configurações.
+- `FIGO.Desktop/` — interface Windows Forms com Dashboard, Viagens, Participantes, Receitas, Despesas, Relatórios, Histórico e Configurações.
 
 ## Configuração do banco
+Para uma instalação vazia, execute `database/000_instalacao_completa.sql` no MySQL 8.0.16+ (testado no CI com 8.4). Para banco existente, aplique as migrações `001`, `002` e `003`, nessa ordem. A versão com participantes e auditoria tem **15 tabelas (9 anteriores + 6 novas)**. Veja [participantes, logs, atualização e opções para 20 tabelas](docs/PARTICIPANTES_AUDITORIA.md).
+
 Defina a variável de ambiente `FIGO_DB_CONNECTION` antes de executar.
 
 Exemplo:

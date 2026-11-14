@@ -49,9 +49,14 @@ if (Environment.GetEnvironmentVariable("FIGO_RUN_DB_TESTS") == "1")
 }
 
 FinanceiroTests.Validacoes();
+ParticipantesAuditoriaTests.Validacoes();
 ViagemTests.Validacoes();
 if (Environment.GetEnvironmentVariable("FIGO_RUN_FINANCE_DB_TESTS") == "1")
 {
     FinanceiroTests.Integracao();
     ViagemTests.Integracao();
 }
+if (Environment.GetEnvironmentVariable("FIGO_RUN_PARTICIPANTES_DB_TESTS") == "1")
+    await ParticipantesAuditoriaTests.IntegracaoAsync();
+if (Environment.GetEnvironmentVariable("FIGO_RUN_INSTALL_TESTS") == "1")
+    ParticipantesAuditoriaTests.InstalacaoVazia();
